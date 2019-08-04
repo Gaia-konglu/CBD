@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="thirdparkContractmapper">
+  
+  <!-- 根据第三方合同id查询第三方合同信息 -->
+	<select id="findThirdParkContractById" parameterType="int" resultMap="map">
+		select tp.t_id,tp.t_number,tp.t_company,tp.t_contacts,tp.t_phone,tp.t_addr,tp.t_startTime,tp.t_endTime,
+		tp.t_copy,tp.t_status,tc.p_number,tc.p_address
+		from thirdparkcontract tp
+		join t_cbdpark tc
+		on tp.t_id=tc.oam_t_id
+		where tp.t_id=#{id} and tp.flag=0
+	</select>
+	<resultMap id="map" type="ThirdParkContractBean">
+		<id property="id" column="t_id"></id>
+		<result property="number" column="t_number"></result>
+		<result property="company" column="t_company"></result>
+		<result property="contacts" column="t_contacts"></result>
+		<result property="phone" column="t_phone"></result>
+		<result property="addr" column="t_addr"></result>
+		<result property="startTime" column="t_startTime"></result>
+		<result property="endTime" column="t_endTime"></result>
+		<result property="copy" column="t_copy"></result>
+		<result property="status" column="t_status"></result>
+		
+		<collection property="carNum" ofType="CarportBean">
+			<result property="carNum" column="p_number"></result>
+			<result property="adress" column="p_address"></result>
+		</collection>
+	</resultMap>
+	
+	<!-- 续约第三方租赁合同信息 -->
+	<update id="updateThirdParkContractById" parameterType="ThirdParkContractBean">
+	   update thirdparkcontract set t_number=#{number},t_startTime=#{startTime},
+	   t_endTime=#{endTime},t_copy=#{copy} ,t_phone=#{phone},t_contacts=#{contacts} where t_id=#{id} and flag=0
+	</update>
+	
+	<!-- 解约第三方租赁合同 -->
+	<update id="deleteThirdParkContractById" parameterType="int">
+	    update thirdparkcontract set flag=1 where t_id=#{id} and flag=0
+	</update>
+	
+	<!-- 添加第三方租赁合约 -->
+	<insert id="addThirdParkContract" parameterType="ThirdParkContractBean" useGeneratedKeys="true" keyProperty="id">
+	     insert into thirdparkcontract(t_number,t_company,t_contacts,t_phone,t_addr,t_startTime,t_endTime,t_copy) 
+	     values('${number}','${company}','${contacts}','${phone}','${addr}','${startTime}','${endTime}','${copy}');
+	</insert>
+	
+	<!-- 查询所有第三方合同 -->
+	<select id="findallThirdParkContract" parameterType="int" resultMap="map">
+		select t_id,t_number,t_company,t_startTime,t_endTime,t_contacts,t_phone,
+		t_status
+	    from thirdparkcontract where flag=0 limit #{0},7
+	</select>
+	
+	<!-- 查询第三方合同数量 -->
+	<select id="findcountThirdParkContract" resultType="int">
+	     select count(*) from thirdparkcontract where flag=0
+	</select>
+	
+	<!-- 更改合约状态 -->
+	<update id="updateThirdParkContractStatus" parameterType="ThirdParkContractBean">
+	    update thirdparkcontract set t_status=#{status} where t_id=#{id} and flag=0
+	</update>
+	
+	<!-- 根据合同id查询所属车位编号 -->
+	<select id="findCarPortByThirdPrakContractId" parameterType="ThirdParkContractBean" resultMap="carportbeanBycontract">
+	     select tk.p_address,tk.p_number FROM thirdparkcontract cp
+         join t_cbdpark tk
+         on cp.t_id=tk.oam_t_id where cp.t_id=#{id} and cp.flag=0 and tk.flag=0 limit #{index},3;
+	</select>
+	
+	<resultMap id="carportbeanBycontract" type="CarportBean">
+	        <id property="id" column="id"></id>
+	        <result property="carNum" column="p_number"></result>
+			<result property="adress" column="p_address"></result>
+	</resultMap>
+	
+	
+	
+	
+	<!-- 查询车位合同对应车位数量 -->
+	<select id="findCountCarportByThirdPartContractId" parameterType="int" resultType="int">
+	     select count(*) FROM thirdparkcontract cp
+         join t_cbdpark tk
+         on cp.t_id=tk.oam_t_id where cp.t_id=#{id} and cp.flag=0
+	</select>
+	
+	<!-- 根据合同id查询所属复印件 -->
+	<select id="findthirdparkContractCopyById" parameterType="int" resultType="String">
+	     select t_copy from thirdparkcontract where t_id=#{id}
+	</select>
+	
+	<!-- 根据合同id查询合同编号 -->
+	<select id="findthirdcontractnumbyids" parameterType="int" resultType="String">
+	     select t_number from thirdparkcontract where t_id=#{id} and flag=0
+	</select>
+	
+	<!-- 存入合同复印件 -->
+	<update id="saveupthirdloadfile" parameterType="ThirdParkContractBean">
+	    update thirdparkcontract set t_copy=#{copy} where t_id=#{id} and flag=0
+	</update>
+	
+	<!-- 删除合同后更改车位表状态 -->
+	<update id="changeThirdcarportStatus" parameterType="int">
+	    update t_cbdpark set flag=1 where oam_t_id=#{id};
+	</update>
+	
+	<!-- 解约前判断是否有企业租赁 -->
+	<select id="findIfthirdContractById" parameterType="int" resultType="int">
+	     select count(ram_b_id) from t_cbdpark where oam_t_id=#{id} and flag=0
+	</select>
+	
+	<!-- 解约前查看该第三方车位由哪些企业租赁 -->
+	<select id="findCarportCompanyRentByIdthird" parameterType="int" resultMap="findcarportCompanyRents">
+	    select tc.p_number,ct.b_company FROM t_cbdpark tc
+        JOIN companyrentcontract ct on  tc.ram_b_id=ct.b_id where tc.oam_t_id=#{id} and tc.flag=0;
+	</select>
+	<resultMap id="findcarportCompanyRents" type="CarportBean">
+	        <id property="id" column="id"></id>
+	        <result property="carNum" column="p_number"></result>
+	        
+	    <association property="crc" javaType="CompanyRentContractBean">
+			<id property="id" column="b_id"></id>
+			<result property="company" column="b_company"></result>
+		</association>
+	</resultMap>
+	
+	
+</mapper>

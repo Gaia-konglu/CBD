@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  <!-- 后台管理员的Mapper -->
+ <mapper namespace="BackGroundMapper">
+        
+        <!-- 修改后台管理员密码、电话号码-->
+     <update id="updatePassAndTel" parameterType="BackStageBean" >
+       update backstage set b_pass = #{pass},b_tel = #{phone} where b_id = #{id};
+     </update>  
+    
+        <!--    通过id获取后台管理员权限信息 -->
+     <select id="getBackById" parameterType="int" resultType="BackStageBean">
+		select b_id as id,user_authority,car_authority,pact_authority,complaim_authority as complain_authority,admin_authority from backstage where b_id=#{id};
+	 </select>
+	 
+	   <!--    通过account获取后台管理员权限信息 -->
+     <select id="getBackByAccount" parameterType="String" resultType="BackStageBean">
+		select b_id as id,b_num as num,b_pass as pass,user_authority,car_authority,pact_authority,complaim_authority as complain_authority,admin_authority from backstage where b_num=#{num};
+	 </select>
+	 
+	 <select id="getAllBack" resultType="BackStageBean">
+		select b_id as id,b_name as name from backstage where flag=1;
+	 </select>
+  </mapper>

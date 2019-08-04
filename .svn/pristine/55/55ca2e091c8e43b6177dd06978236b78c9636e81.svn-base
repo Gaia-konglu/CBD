@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.project.dao.ITenantDao">
+		
+  		<!-- 查询所有车位招租信息 -->
+  		<select id="findAll"  resultMap="findAll">
+  			SELECT part.p_id,part.p_address,part.p_number,part.p_lngLat,
+			rentinfor.r_startTime,rentinfor.r_endTime,rentinfor.r_price,rentinfor.r_id,
+			person.name,person.job,person.credit
+			FROM rentinfor
+			JOIN partingspace AS part ON part.p_id=rentinfor.p_id
+			JOIN person ON person.id = part.p_l_id
+			WHERE rentinfor.r_flag=1 
+			<if test="!rent.region.equals('')">
+			AND part.p_address LIKE '%${rent.region}%'
+			</if>
+			<if test="!rent.startTime.equals('')">
+			AND rentinfor.r_startTime &gt;= #{rent.startTime}
+			</if>
+			<if test="!rent.endTime.equals('')">
+			AND rentinfor.r_endTime &lt;= #{rent.endTime}
+			</if>
+			LIMIT #{num},10;
+  		</select>
+  		
+  		<resultMap type="RentInforBean" id="findAll">
+  				<id property = "id" column = "r_id"/>
+  				<result property="startTime" column = "r_startTime"/>
+  				<result property="endTime" column = "r_endTime"/>
+  				<result property="price" column = "r_price"/>
+  			<association property="personCarSpaceInfor" javaType="PartingSpaceBean">
+  				<id property = "id" column = "p_id"/>
+  				<result property="addr" column = "p_address"/>
+  				<result property="carNum" column = "p_number"/>
+  				<result property="lnglat" column = "p_lngLat"/>
+  			</association>
+  			<association property="landLady" javaType="PersonBean">
+  				<result property="name" column = "name"/>
+  				<result property="job" column = "job"/>
+  				<result property="credit" column = "credit"/>
+  			</association>
+  		</resultMap>
+  	
+  		
+  			<!-- 查找总页数 -->
+  		<select id="findTotalPages" parameterType="RentInforBean" resultType="int">
+  			SELECT count(*) FROM rentinfor 
+  			JOIN partingspace AS part ON part.p_id=rentinfor.p_id
+			JOIN person ON person.id = part.p_l_id
+  			WHERE r_flag = 1 
+  			<if test="!region.equals('')">
+			AND part.p_address LIKE '%${region}%'
+			</if>
+  			<if test="!startTime.equals('')">
+			AND r_startTime &gt;= #{startTime}
+			</if>
+			<if test="!endTime.equals('')">
+			AND r_endTime &lt;= #{endTime}
+			</if>
+  		</select> 
+  		
+  		<!-- 高德地图显示招租信息 -->
+  		<select id="findAllRentInfor"  parameterType="RentInforBean" resultMap="findAllRentInfor">
+  			SELECT part.p_id,part.p_address,part.p_number,part.p_lngLat,part.p_lng,part.p_lat,
+			rentinfor.r_startTime,rentinfor.r_endTime,rentinfor.r_price,rentinfor.r_id,
+			person.name,person.job,person.credit
+			FROM rentinfor
+			JOIN partingspace AS part ON part.p_id=rentinfor.p_id
+			JOIN person ON person.id = part.p_l_id
+			WHERE rentinfor.r_flag=1 
+			<if test="!region.equals('')">
+			AND part.p_address LIKE '%${region}%'
+			</if>
+			<if test="!startTime.equals('')">
+			AND rentinfor.r_startTime &gt;= #{startTime}
+			</if>
+			<if test="!endTime.equals('')">
+			AND rentinfor.r_endTime &lt;= #{endTime}
+			</if>
+  		</select>
+  			<resultMap type="RentInforBean" id="findAllRentInfor">
+  				<id property = "id" column = "r_id"/>
+  				<result property="startTime" column = "r_startTime"/>
+  				<result property="endTime" column = "r_endTime"/>
+  				<result property="price" column = "r_price"/>
+  			<association property="personCarSpaceInfor" javaType="PartingSpaceBean">
+  				<id property = "id" column = "p_id"/>
+  				<result property="addr" column = "p_address"/>
+  				<result property="carNum" column = "p_number"/>
+  				<result property="lnglat" column = "p_lngLat"/>
+  				<result property="lng" column = "p_lng"/>
+  				<result property="lat" column = "p_lat"/>
+  			</association>
+  			<association property="landLady" javaType="PersonBean">
+  				<result property="name" column = "name"/>
+  				<result property="job" column = "job"/>
+  				<result property="credit" column = "credit"/>
+  			</association>
+  		</resultMap>
+  		
+  		
+  		
+  		<!-- 查看招租婆ID -->
+  		<select id="findLandLadyId" parameterType="int" resultType="int">
+  			SELECT partingspace.p_l_id FROM rentinfor 
+  			JOIN partingspace ON partingspace.p_id=rentinfor.p_id 
+  			WHERE rentinfor.r_id=#{id};
+  		</select>
+  		
+  		<!-- 添加预定信息 -->
+  		<insert id="addBookInfor" parameterType="BookInforBean">
+  			INSERT INTO bookinfor(b_r_id,b_t_id,b_l_id,b_message) VALUES(#{rent.id},#{tenant.id},#{landLady.id},#{message});
+  		</insert>
+  		
+  		<!-- 查询可支付预定信息 -->
+  		<select id="findBookInforByTenant" parameterType="int" resultMap="findBookInforByTenant">
+  			SELECT rentinfor.r_startTime,rentinfor.r_endTime,rentinfor.r_price,
+					person.name,person.phone,person.credit,
+					partingspace.p_address,partingspace.p_number, 
+					bookinfor.b_message,bookinfor.b_order,bookinfor.b_id
+					FROM bookinfor
+					JOIN rentinfor ON rentinfor.r_id=bookinfor.b_r_id
+					JOIN person ON person.id=bookinfor.b_l_id
+					JOIN partingspace ON partingspace.p_id=rentinfor.p_id
+					WHERE bookinfor.b_order <![CDATA[<>]]> 0 AND bookinfor.b_t_id=#{id};
+  		</select>
+  		<resultMap type="BookInforBean" id="findBookInforByTenant">
+  			<id property="id" column="b_id"/>
+			<result property = "message" column = "b_message"/>
+			<result property = "order" column = "b_order"/>
+			<association property="rent" javaType="RentInforBean">
+				<id property="id" column="r_id"/>
+				<result property = "startTime" column = "r_startTime"/>
+				<result property = "endTime" column = "r_endTime"/>
+				<result property = "price" column = "r_price"/>
+			</association>
+			<association property="part" javaType="PartingSpaceBean">
+				<result property = "addr" column = "p_address"/>
+				<result property = "carNum" column = "p_number"/>
+			</association>
+			<association property="landLady" javaType="PersonBean">
+				<result property = "name" column = "name"/>
+				<result property = "phone" column = "phone"/>
+				<result property = "credit" column = "credit"/>
+			</association>
+		</resultMap>
+		
+		<!-- 查询事件详细信息 -->
+		<select id="findThingBycp_or_id" parameterType="String" resultMap="findthing">
+		   select r_startTime,r_endTime,p_address,p_number from tradinginfor
+		   join rentinfor on tr_r_id=r_id
+		   join partingspace ON rentinfor.p_id=partingspace.p_id
+		   where tr_id=#{id}
+		</select>
+		
+		<resultMap type="OrderBean" id="findthing">
+		 <!--  <id property="id" column="tr_id"></id> -->
+		  <association property="rentInfor" javaType="RentInforBean">
+		      <id property="id" column="r_id"></id>
+		      <result property="startTime" column="r_startTime"></result>
+		      <result property="endTime" column="r_endTime"></result>
+		  </association>
+		  <association property="partingSpace" javaType="PartingSpaceBean">
+		      <id property="id" column="p_id"></id>
+		      <result property="addr" column="p_address"></result>
+		       <result property="carNum" column="p_number"></result>
+		  </association>
+		</resultMap>
+		
+		<!-- 通过被投诉人id查询完成订单数 -->
+		<select id="findCountByPersonId" parameterType="int" resultType="int">
+		  SELECT COUNT(*) FROM tradinginfor where tr_l_id =#{0} OR tr_t_id=#{1}
+		</select>
+  		
+  		<!-- 删除招租信息 0表示删除；1表示未预定；2表示已预定-->
+  		<update id="deleteRentInfor" parameterType="RentInforBean">
+  			UPDATE rentinfor SET r_flag=2 WHERE r_id=#{id};
+  		</update>
+  		
+  	
+  		
+  		<!-- 通过订单号查询预定信息-->
+  		<select id="findBookInforByTradeOrder" parameterType="String" resultMap="findBookInforByTradeOrder">
+  		SELECT bookinfor.b_id,bookinfor.b_l_id,bookinfor.b_r_id,bookinfor.b_t_id,person.id,person.name,person.password
+  		FROM bookinfor 
+  		JOIN person ON person.id=bookinfor.b_t_id
+  		WHERE b_order=#{tradeOrder};
+  		</select>
+  		<resultMap type="BookInforBean" id="findBookInforByTradeOrder">
+  		<id property="id" column="b_id"/>
+  		<result property="lid" column="b_l_id"/>
+  		<result property="rid" column="b_r_id"/>
+  		<result property="tid" column="b_t_id"/>
+  		<association property="tenant" javaType="PersonBean">
+  			<id property = "id" column="id"/>
+  			<result property="name" column="name"/>
+  			<result property="password" column="password"/>
+  		</association>
+  		</resultMap>
+  		
+  		<!-- 添加交易订单信息 -->
+  		<insert id="addTradeInfor" parameterType="OrderBean">
+  			INSERT INTO tradinginfor(tr_id,tr_r_id,tr_l_id,tr_t_id,tr_time,tr_order) 
+  			VALUES(#{id},#{rid},#{lid},#{tid},#{tradeTime},#{tradeOrder});
+  		</insert>
+  		
+  		<!-- 删除已完成订单的预定信息 -->
+  		<update id="deletePayBookInfor" parameterType="BookInforBean">
+  			UPDATE bookinfor SET b_order=0 WHERE b_id=#{id};
+  		</update>
+  		
+  		<!-- 查询交易记录 -->
+		<select id="findTradeInfor"  resultMap="findTradeInfor">
+		SELECT tradinginfor.tr_time,tradinginfor.tr_id,tradinginfor.tr_order,
+		rentinfor.r_startTime,rentinfor.r_endTime,rentinfor.r_price,
+		partingspace.p_address,partingspace.p_number,person.name,person.id,
+		t_complain.c_status as cStatus
+		FROM tradinginfor 
+		JOIN rentinfor ON rentinfor.r_id=tradinginfor.tr_r_id
+		JOIN partingspace ON partingspace.p_id=rentinfor.p_id
+		JOIN person ON person.id=tradinginfor.tr_l_id
+		Join t_complain on t_complain.cp_or_id=tradinginfor.tr_id
+		WHERE tradinginfor.tr_t_id=#{tenant.id}  limit #{num},10;
+		</select>
+		<resultMap type="OrderBean" id="findTradeInfor">
+			<id property="id" column="tr_id"/>
+			<result property="tradeTime" column="tr_time"/>
+			<result property="tradeOrder" column="tr_order"/>
+			<result property="cStatus" column="cStatus"/>
+		<association property="rentInfor" javaType="RentInforBean">
+			<result property="startTime" column="r_startTime"/>
+			<result property="endTime" column="r_endTime"/>
+			<result property="price" column="r_price"/>
+		</association>
+		<association property="partingSpace" javaType="PartingSpaceBean">
+			<result property="addr" column="p_address"/>
+			<result property="carNum" column="p_number"/>
+		</association>
+		<association property="landLady" javaType="PersonBean">
+			<id property="id" column="id"/>
+			<result property="name" column="name"/>
+		</association>
+		</resultMap>
+		
+		<!-- 查询交易记录总数 -->
+		<select id="findTradeInforTotal" parameterType="PersonBean" resultType="int">
+		SELECT count(*) as total FROM tradinginfor 
+		JOIN rentinfor ON rentinfor.r_id=tradinginfor.tr_r_id
+		JOIN partingspace ON partingspace.p_id=rentinfor.p_id
+		JOIN person ON person.id=tradinginfor.tr_l_id
+		<!-- left Join t_complain on t_complain.cp_or_id=tradinginfor.tr_id -->
+		WHERE tradinginfor.tr_t_id=#{id};
+		</select>
+  		
+  </mapper>

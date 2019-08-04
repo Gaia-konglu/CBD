@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.IBackStageDao">
+    <select id="selectByNum" resultType="BackStageBean">
+        select b_id as id,b_num as num,b_pass as pass,b_name as name,b_tel as phone,user_authority,car_authority,pact_authority,complaim_authority as complain_authority
+        ,admin_authority from backstage
+        where b_num=#{num} and flag=1
+    </select>
+</mapper>

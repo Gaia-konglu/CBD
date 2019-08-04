@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.IPersonDao">
+    <select id="selectByName" resultMap="onePerson">
+        select  p.id,p.name,p.password,p.real_name,p.addr,p.phone,p.id_card,p.job,p.credit,p.email,r.id as roleId,r.name as roleName
+        from person p
+        left join role r
+        on p.r_role_id=r.id
+        where p.name=#{name}
+    </select>
+    <resultMap id="onePerson" type="PersonBean">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="password" column="password"/>
+        <result property="realName" column="real_name"/>
+        <result property="addr" column="addr"/>
+        <result property="phone" column="phone"/>
+        <result property="idCard" column="id_card"/>
+        <result property="job" column="job"/>
+        <result property="credit" column="credit"/>
+        <result property="eMail" column="email"/>
+        <association property="role" javaType="RoleBean">
+            <id property="id" column="roleId"/>
+            <result property="name" column="roleName"/>
+        </association>
+    </resultMap>
+    <insert id="insert" parameterType="PersonBean">
+        insert into person
+           (name,password,real_name,addr,phone,id_card,job,email,r_role_id)
+        values
+           (#{name},#{password},#{realName},#{addr},#{phone},#{idCard},#{job},#{eMail},#{role.id})
+    </insert>
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  <!-- 日志的Mapper -->
+ <mapper namespace="LogMapper">
+        
+        <!-- 记录后台登录日志 -->
+       <insert id="RealLog" parameterType="RearLoginLogBean" keyProperty="id" useGeneratedKeys="true">
+         insert into rearloginlog(rname,raddr,flag) values('${name}','${addr}','${flag}');
+       </insert>
+       
+       
+       <!-- 查询后台登录日志 -->
+       <select id="findLoginLog" resultType="RearLoginLogBean" resultMap="map1">
+		select * from rearloginlog where flag=1 ORDER BY rid DESC LIMIT #{index},3;
+	 </select>
+	 
+	 <resultMap type="RearLoginLogBean" id="map1">
+	     <id property="id" column="rid"/> 
+	     <result property="addr" column="raddr"/>
+	      <result property="time" column="rtime"/>
+	     <result property="name" column="rname"/>
+	     <result property="flag" column="flag"/>
+	 </resultMap>
+	 
+	 
+	 <!-- 记录后台操作日志 -->
+	 <insert id="RealOperation" parameterType="RearOperationLogBean" keyProperty="id" useGeneratedKeys="true">
+         insert into operationlog2(omodule,operation,flag) values('${module}','${operation}','${flag}');
+       </insert>
+       
+       
+       <!-- 查看后台操作日志 -->
+	 <!-- 查询后台登录日志 -->
+       <select id="findRealOperation" resultType="RearOperationLogBean" resultMap="map2">
+		select * from operationlog2 where flag=1 ORDER BY oid DESC LIMIT #{index},3 ;
+	 </select>
+	 
+	 <resultMap type="RearOperationLogBean" id="map2">
+	     <id property="id" column="oid"/> 
+	     <result property="time" column="otime"/>
+	     <result property="module" column="omodule"/>     
+	     <result property="operation" column="operation"/>
+	     <result property="flag" column="flag"/>
+	 </resultMap>
+	 
+	 
+	 <!-- 查看后台登录日志的总页数 -->
+	  <select id="findLoginLogTotalPage" resultType="int" >
+		SELECT COUNT(*) FROM rearloginlog WHERE flag=1;
+	 </select>
+	 
+	 
+	 <!-- 查看后台操作日志的总页数 -->
+	  <select id="findRealOperationTotalPage" resultType="int" >
+		SELECT COUNT(*) FROM operationlog2 WHERE flag=1;
+	 </select>
+	 
+	 
+  </mapper>

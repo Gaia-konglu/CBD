@@ -1,0 +1,4 @@
+sms.url=http://v.juhe.cn/sms/send
+sms.key=7f6f72c156231938bfa82ff1d875455c
+sms.tplId=106388
+sms.tplValue=%23code%23%3d

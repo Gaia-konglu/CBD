@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="SuperMapper">
+
+	<!-- 超级管理员修改后台管理员的权限 -->
+	<update id="changeBackInfo" parameterType="BackStageBean">
+		update backstage set user_authority =#{user_authority},car_authority =#{car_authority},pact_authority =#{pact_authority},complaim_authority =#{complain_authority} where b_id=#{id};
+	</update>
+	
+	<insert id="addback" parameterType="BackStageBean">
+    	insert into backstage(b_num,b_pass,b_name,b_tel,user_authority,car_authority,pact_authority,complaim_authority,role_id,flag) values(#{num},#{pass},#{name},#{phone},#{user_authority},#{car_authority},#{pact_authority},#{complain_authority},3,1); 
+    </insert>
+    
+    <!-- 查看所有后台管理员 -->
+	<select id="selectAllBackStage" resultMap="backmap1" parameterType="java.util.Map">
+	
+	select * from backstage where  isnull(admin_authority) and flag=1 limit #{0},#{1};
+	</select>
+	<select id="countPages" resultType="Integer">
+	select count(*) from backstage where  isnull(admin_authority) and flag=1;
+	
+	</select>
+	
+	<select id="findByid" parameterType="int" resultMap="backmap1">
+	select * from backstage where b_id=#{id}
+	</select>
+	
+	 <!-- 根据条件查看所有后台管理员 -->
+	<select id="selectByCondition" resultMap="backmap1" parameterType="java.util.Map">
+	
+	select * from backstage where  isnull(admin_authority) and flag=1 
+	<if test="bsb.num!=''">
+	and b_num=#{bsb.num}
+	</if>
+	<if test="bsb.name!=''">
+	and b_name like '%${bsb.name}%'
+	</if>
+	limit #{0},#{1};
+	</select>
+	
+	<update id="deleteById" parameterType="int">
+	update backstage set flag=0 where b_id=#{id}
+	</update>
+	
+	
+	
+	<resultMap type="BackStageBean" id="backmap1">
+	<id property="id" column="b_id"/>
+	<result property="num" column="b_num"/>
+	<result property="pass" column="b_pass"/>
+	<result property="name" column="b_name"/>
+	<result property="phone" column="b_tel"/>
+	<result property="user_authority" column="user_authority"/>
+	<result property="car_authority" column="car_authority"/>
+	<result property="pact_authority" column="pact_authority"/>
+	<result property="complain_authority" column="complaim_authority"/>
+	<result property="admin_authority" column="admin_authority"/>
+	
+	
+	</resultMap>
+	
+	
+	
+</mapper>

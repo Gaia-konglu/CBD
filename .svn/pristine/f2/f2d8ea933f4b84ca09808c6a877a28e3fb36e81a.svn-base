@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.ICarportDao">
+  <select id="findAllCarport"  resultMap="map1" parameterType="int">
+    select p_address,p_number,p_status,id  from t_cbdpark where flag=0 limit #{0},#{1};
+  </select>
+ <select id="countCarport"  resultType="int">
+	select count(*) as totalCount from t_cbdpark where flag=0
+  </select>
+  <select id="countCarport2"  resultType="int" parameterType="com.project.bean.CarportBean">
+	select count(*) as totalCount from t_cbdpark  where p_status=#{status} and flag=0
+	<if test="adress!=''">
+	and p_address like '%${adress}%'
+	</if>
+	
+  </select>
+  
+   <select id="findByCondition"  resultMap="map1" parameterType="java.util.Map">
+    select p_address,p_number,p_status  from t_cbdpark where p_status=#{cb.status}   and flag=0
+    <if test="cb.adress!=''">
+    and p_address like '%${cb.adress}%' 
+    </if>
+    limit #{0},#{1};
+  </select>
+   
+   <update id="updateCarport" parameterType="com.project.bean.CarportBean">
+   
+   update t_cbdpark set p_address=#{adress},p_number=#{carNum},p_status=#{status} where id=#{id}
+   
+   </update>
+   
+   <update id="deletecarport">
+   
+   update t_cbdpark set flag=1 where id in 
+   
+   <foreach collection="array" index="index" open="(" separator="," close=")" item="haha">
+            #{haha}
+        </foreach>
+   
+   </update>
+   
+  <!--useGeneratedKeys 如果插入表一字增列为主键，插入式自动生成，并返回主键  keyProperty对象中主键对应的属性 -->
+  <insert id="insertMany" parameterType="java.util.List" >
+  insert into t_cbdpark (p_address,p_number,oam_t_id) values
+  <foreach collection="list" item="carport" index="index" separator=",">
+  (#{carport.adress},#{carport.carNum},#{carport.tpc.id})
+  </foreach>
+  </insert>
+  
+ <resultMap id="map1" type="CarportBean">
+		<id property="id" column="p_id"></id>
+		<result property="adress" column="p_address"></result>
+		<result property="carNum" column="p_number"></result>
+			<result property="status" column="p_status"></result>
+		<!-- 一对多，多的一边有对象引用 -->
+		<!-- <association property="tpc" javaType="ThirdParkContractBean" select="" column=""/>
+		<association property="crc" javaType="CompanyRentContractBean" select="" column=""/> -->
+	</resultMap>
+ 
+ 
+</mapper>
