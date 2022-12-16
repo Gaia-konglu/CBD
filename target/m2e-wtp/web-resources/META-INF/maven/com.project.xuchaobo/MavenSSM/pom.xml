@@ -13,7 +13,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     
     <!-- 先定义jar包版本 -->
-    <spring.version>4.2.2.RELEASE</spring.version>
+    <spring.version>5.2.20.RELEASE</spring.version>
     <jackson.version>2.6.0</jackson.version>
   </properties>
   
